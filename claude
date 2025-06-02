@@ -5,443 +5,288 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carpool Tracker</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: #2563eb;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .summary {
-            padding: 15px 20px;
-            background: #f8fafc;
-            border-bottom: 2px solid #e2e8f0;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-        }
-        
-        .summary-item {
-            text-align: center;
-            margin: 5px;
-        }
-        
-        .summary-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2563eb;
-        }
-        
-        .summary-label {
-            font-size: 14px;
-            color: #64748b;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-        
-        th {
-            background: #374151;
-            color: white;
-            padding: 12px 8px;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid #d1d5db;
-        }
-        
-        td {
-            padding: 10px 8px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        tr:nth-child(even) {
-            background-color: #f9fafb;
-        }
-        
-        tr:hover {
-            background-color: #f3f4f6;
-        }
-        
-        .car-number {
-            font-weight: bold;
-            color: #2563eb;
-            text-align: center;
-        }
-        
-        .status-full {
-            background-color: #fecaca;
-            color: #991b1b;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .status-almost {
-            background-color: #fef3c7;
-            color: #92400e;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .status-available {
-            background-color: #dcfce7;
-            color: #166534;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .phone {
-            font-family: monospace;
-            font-size: 13px;
-        }
-        
-        .passengers {
-            max-width: 200px;
-            word-wrap: break-word;
-        }
-        
-        .notes {
-            font-style: italic;
-            color: #6b7280;
-            font-size: 13px;
-        }
-        
-        .edit-mode {
-            background-color: #fffbeb;
-        }
-        
-        input[type="text"], input[type="tel"], textarea {
-            width: 100%;
-            border: 1px solid #d1d5db;
-            padding: 4px 6px;
-            border-radius: 4px;
-            font-size: 13px;
-        }
-        
-        textarea {
-            height: 40px;
-            resize: vertical;
-        }
-        
-        .edit-btn {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        .edit-btn:hover {
-            background: #2563eb;
-        }
-        
-        .save-btn {
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            margin-right: 4px;
-        }
-        
-        .cancel-btn {
-            background: #6b7280;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: #2563eb; color: white; padding: 20px; position: relative; }
+        .edit-header { position: absolute; top: 10px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .nav-tabs { display: flex; background: #374151; }
+        .nav-tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; border: none; background: none; color: white; transition: background 0.2s; }
+        .nav-tab.active { background: #4f46e5; }
+        .nav-tab:hover { background: #4338ca; }
+        .controls { padding: 15px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-secondary { background: #6b7280; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+        th { background: #374151; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f9fafb; }
+        tr:hover { background-color: #f3f4f6; }
+        .comments { margin-top: 10px; padding: 10px; background: #f8fafc; border-radius: 4px; font-size: 12px; }
+        .comment { margin-bottom: 8px; padding: 5px; background: white; border-radius: 3px; }
+        .comment-author { font-weight: bold; color: #2563eb; }
+        .comment-form { display: flex; gap: 5px; margin-top: 5px; }
+        .comment-form input, .comment-form textarea { flex: 1; padding: 4px; border: 1px solid #d1d5db; border-radius: 3px; font-size: 12px; }
+        .comment-form button { padding: 4px 8px; }
+        input, textarea, select { padding: 4px; border: 1px solid #d1d5db; border-radius: 3px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; max-width: 500px; width: 90%; }
+        .column-toggle { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
+        .column-toggle label { display: flex; align-items: center; gap: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚗 Friends Trip Carpool Tracker</h1>
-            <p>Managing 7 cars for our awesome adventure!</p>
+            <h1 id="appTitle">🚗 Friends Trip Carpool Tracker</h1>
+            <p id="appDesc">Managing cars for our awesome adventure!</p>
+            <button class="edit-header" onclick="editHeader()">Edit Title</button>
         </div>
         
-        <div class="summary">
-            <div class="summary-item">
-                <div class="summary-number" id="totalPeople">21</div>
-                <div class="summary-label">Total People</div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-number" id="totalCapacity">35</div>
-                <div class="summary-label">Total Capacity</div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-number" id="availableSeats">14</div>
-                <div class="summary-label">Available Seats</div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-number" id="fullCars">2</div>
-                <div class="summary-label">Full Cars</div>
-            </div>
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('departure')">Departure</button>
+            <button class="nav-tab" onclick="switchTab('return')">Return</button>
         </div>
         
-        <table id="carpoolTable">
-            <thead>
-                <tr>
-                    <th>Car #</th>
-                    <th>Driver</th>
-                    <th>Phone</th>
-                    <th>Capacity</th>
-                    <th>Passengers</th>
-                    <th>Seats Left</th>
-                    <th>Status</th>
-                    <th>Departure</th>
-                    <th>Notes</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr data-car="1">
-                    <td class="car-number">1</td>
-                    <td>Sarah Johnson</td>
-                    <td class="phone">(555) 123-4567</td>
-                    <td>5</td>
-                    <td class="passengers">Mike, Lisa, Tom, Jenny</td>
-                    <td>0</td>
-                    <td><span class="status-full">FULL</span></td>
-                    <td>8:00 AM</td>
-                    <td class="notes">No smoking please</td>
-                    <td><button class="edit-btn" onclick="editRow(1)">Edit</button></td>
-                </tr>
-                <tr data-car="2">
-                    <td class="car-number">2</td>
-                    <td>Alex Chen</td>
-                    <td class="phone">(555) 234-5678</td>
-                    <td>4</td>
-                    <td class="passengers">David, Emma</td>
-                    <td>1</td>
-                    <td><span class="status-almost">1 LEFT</span></td>
-                    <td>8:15 AM</td>
-                    <td class="notes">Meeting at Starbucks</td>
-                    <td><button class="edit-btn" onclick="editRow(2)">Edit</button></td>
-                </tr>
-                <tr data-car="3">
-                    <td class="car-number">3</td>
-                    <td>Maria Rodriguez</td>
-                    <td class="phone">(555) 345-6789</td>
-                    <td>7</td>
-                    <td class="passengers">Carlos, Ana, Luis, Sofia, Diego, Pablo</td>
-                    <td>0</td>
-                    <td><span class="status-full">FULL</span></td>
-                    <td>7:45 AM</td>
-                    <td class="notes">Van - room for luggage</td>
-                    <td><button class="edit-btn" onclick="editRow(3)">Edit</button></td>
-                </tr>
-                <tr data-car="4">
-                    <td class="car-number">4</td>
-                    <td>James Wilson</td>
-                    <td class="phone">(555) 456-7890</td>
-                    <td>5</td>
-                    <td class="passengers">Kevin, Rachel</td>
-                    <td>2</td>
-                    <td><span class="status-available">2 SEATS</span></td>
-                    <td>8:00 AM</td>
-                    <td class="notes">Can pick up downtown</td>
-                    <td><button class="edit-btn" onclick="editRow(4)">Edit</button></td>
-                </tr>
-                <tr data-car="5">
-                    <td class="car-number">5</td>
-                    <td>Emily Davis</td>
-                    <td class="phone">(555) 567-8901</td>
-                    <td>4</td>
-                    <td class="passengers">Mark</td>
-                    <td>2</td>
-                    <td><span class="status-available">2 SEATS</span></td>
-                    <td>8:30 AM</td>
-                    <td class="notes">Small car - light bags only</td>
-                    <td><button class="edit-btn" onclick="editRow(5)">Edit</button></td>
-                </tr>
-                <tr data-car="6">
-                    <td class="car-number">6</td>
-                    <td>Ryan Thompson</td>
-                    <td class="phone">(555) 678-9012</td>
-                    <td>5</td>
-                    <td class="passengers">Jessica, Andrew</td>
-                    <td>2</td>
-                    <td><span class="status-available">2 SEATS</span></td>
-                    <td>8:00 AM</td>
-                    <td class="notes">Truck - can haul gear</td>
-                    <td><button class="edit-btn" onclick="editRow(6)">Edit</button></td>
-                </tr>
-                <tr data-car="7">
-                    <td class="car-number">7</td>
-                    <td>Nicole Martinez</td>
-                    <td class="phone">(555) 789-0123</td>
-                    <td>5</td>
-                    <td class="passengers"></td>
-                    <td>4</td>
-                    <td><span class="status-available">4 SEATS</span></td>
-                    <td>8:15 AM</td>
-                    <td class="notes">Flexible pickup location</td>
-                    <td><button class="edit-btn" onclick="editRow(7)">Edit</button></td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="controls">
+            <button class="btn btn-primary" onclick="addRow()">+ Add Car</button>
+            <button class="btn btn-secondary" onclick="toggleColumns()">Show/Hide Columns</button>
+            <button class="btn btn-secondary" onclick="addColumn()">+ Add Column</button>
+        </div>
+        
+        <div class="table-container">
+            <table id="carpoolTable">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="headerModal" class="modal">
+        <div class="modal-content">
+            <h3>Edit Header</h3>
+            <input type="text" id="titleInput" placeholder="App Title">
+            <textarea id="descInput" placeholder="Description" rows="3"></textarea>
+            <div style="margin-top: 10px;">
+                <button class="btn btn-success" onclick="saveHeader()">Save</button>
+                <button class="btn btn-secondary" onclick="closeModal('headerModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="columnModal" class="modal">
+        <div class="modal-content">
+            <h3>Show/Hide Columns</h3>
+            <div id="columnToggles" class="column-toggle"></div>
+            <button class="btn btn-success" onclick="closeModal('columnModal')">Close</button>
+        </div>
+    </div>
+
+    <div id="addColumnModal" class="modal">
+        <div class="modal-content">
+            <h3>Add New Column</h3>
+            <input type="text" id="newColumnName" placeholder="Column Name">
+            <select id="newColumnType">
+                <option value="text">Text</option>
+                <option value="number">Number</option>
+                <option value="select">Dropdown</option>
+                <option value="checkbox">Checkbox</option>
+            </select>
+            <div id="selectOptions" style="display:none;">
+                <textarea id="selectOptionsList" placeholder="Enter options, one per line" rows="3"></textarea>
+            </div>
+            <div style="margin-top: 10px;">
+                <button class="btn btn-success" onclick="saveNewColumn()">Add Column</button>
+                <button class="btn btn-secondary" onclick="closeModal('addColumnModal')">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        let editingRow = null;
-        let originalData = {};
+        let currentTab = 'departure';
+        let data = { departure: [], return: [] };
+        let columns = [
+            {id: 'car', name: 'Car #', type: 'text', visible: true, system: true},
+            {id: 'driver', name: 'Driver', type: 'text', visible: true, system: true},
+            {id: 'phone', name: 'Phone', type: 'text', visible: true, system: true},
+            {id: 'capacity', name: 'Capacity', type: 'number', visible: true, system: true},
+            {id: 'passengers', name: 'Passengers', type: 'text', visible: true, system: true},
+            {id: 'departure', name: 'Departure', type: 'text', visible: true, system: true},
+            {id: 'notes', name: 'Notes', type: 'text', visible: true, system: true}
+        ];
 
-        function editRow(carNumber) {
-            if (editingRow !== null) {
-                cancelEdit();
+        function initData() {
+            data.departure = [
+                {car: '1', driver: 'Sarah Johnson', phone: '(555) 123-4567', capacity: 5, passengers: 'Mike, Lisa, Tom, Jenny', departure: '8:00 AM', notes: 'No smoking please', comments: []},
+                {car: '2', driver: 'Alex Chen', phone: '(555) 234-5678', capacity: 4, passengers: 'David, Emma', departure: '8:15 AM', notes: 'Meeting at Starbucks', comments: []}
+            ];
+            data.return = [
+                {car: '1', driver: 'Sarah Johnson', phone: '(555) 123-4567', capacity: 5, passengers: 'Mike, Lisa, Tom, Jenny', departure: '6:00 PM', notes: 'Same group returning', comments: []},
+                {car: '2', driver: 'Alex Chen', phone: '(555) 234-5678', capacity: 4, passengers: 'David, Emma', departure: '6:15 PM', notes: 'Flexible timing', comments: []}
+            ];
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderTable();
+        }
+
+        function renderTable() {
+            const thead = document.getElementById('tableHead');
+            const tbody = document.getElementById('tableBody');
+            const visibleCols = columns.filter(c => c.visible);
+            
+            thead.innerHTML = '<tr>' + visibleCols.map(c => `<th>${c.name}</th>`).join('') + '<th>Comments</th><th>Actions</th></tr>';
+            
+            tbody.innerHTML = data[currentTab].map((row, idx) => 
+                '<tr>' + 
+                visibleCols.map(col => `<td>${renderCell(row, col, idx)}</td>`).join('') +
+                `<td>${renderComments(row, idx)}</td>` +
+                `<td><button class="btn btn-secondary" onclick="editRow(${idx})">Edit</button> <button class="btn btn-secondary" onclick="deleteRow(${idx})">Delete</button></td>` +
+                '</tr>'
+            ).join('');
+        }
+
+        function renderCell(row, col, rowIdx) {
+            if (col.type === 'checkbox') {
+                return `<input type="checkbox" ${row[col.id] ? 'checked' : ''} onchange="updateCell(${rowIdx}, '${col.id}', this.checked)">`;
+            } else if (col.type === 'select') {
+                const options = col.options || [];
+                return `<select onchange="updateCell(${rowIdx}, '${col.id}', this.value)">
+                    ${options.map(opt => `<option value="${opt}" ${row[col.id] === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                </select>`;
             }
-            
-            const row = document.querySelector(`tr[data-car="${carNumber}"]`);
-            editingRow = carNumber;
-            
-            // Store original data
-            const cells = row.querySelectorAll('td');
-            originalData = {
-                driver: cells[1].textContent,
-                phone: cells[2].textContent,
-                capacity: cells[3].textContent,
-                passengers: cells[4].textContent,
-                departure: cells[7].textContent,
-                notes: cells[8].textContent
-            };
-            
-            // Make row editable
-            row.classList.add('edit-mode');
-            cells[1].innerHTML = `<input type="text" value="${originalData.driver}">`;
-            cells[2].innerHTML = `<input type="tel" value="${originalData.phone}">`;
-            cells[3].innerHTML = `<input type="text" value="${originalData.capacity}" style="width: 50px;">`;
-            cells[4].innerHTML = `<textarea>${originalData.passengers}</textarea>`;
-            cells[7].innerHTML = `<input type="text" value="${originalData.departure}">`;
-            cells[8].innerHTML = `<textarea>${originalData.notes}</textarea>`;
-            cells[9].innerHTML = `
-                <button class="save-btn" onclick="saveRow(${carNumber})">Save</button>
-                <button class="cancel-btn" onclick="cancelEdit()">Cancel</button>
-            `;
+            return row[col.id] || '';
         }
 
-        function saveRow(carNumber) {
-            const row = document.querySelector(`tr[data-car="${carNumber}"]`);
-            const inputs = row.querySelectorAll('input, textarea');
-            
-            const newData = {
-                driver: inputs[0].value,
-                phone: inputs[1].value,
-                capacity: parseInt(inputs[2].value) || 0,
-                passengers: inputs[3].value,
-                departure: inputs[4].value,
-                notes: inputs[5].value
-            };
-            
-            // Update the row
-            const cells = row.querySelectorAll('td');
-            cells[1].textContent = newData.driver;
-            cells[2].textContent = newData.phone;
-            cells[3].textContent = newData.capacity;
-            cells[4].textContent = newData.passengers;
-            cells[7].textContent = newData.departure;
-            cells[8].textContent = newData.notes;
-            
-            // Calculate passengers and update status
-            const passengerCount = newData.passengers ? newData.passengers.split(',').length : 0;
-            const seatsLeft = Math.max(0, newData.capacity - 1 - passengerCount);
-            
-            cells[5].textContent = seatsLeft;
-            
-            let statusHtml;
-            if (seatsLeft === 0) {
-                statusHtml = '<span class="status-full">FULL</span>';
-            } else if (seatsLeft === 1) {
-                statusHtml = '<span class="status-almost">1 LEFT</span>';
-            } else {
-                statusHtml = `<span class="status-available">${seatsLeft} SEATS</span>`;
+        function renderComments(row, rowIdx) {
+            const comments = row.comments || [];
+            return `<div class="comments">
+                ${comments.map(c => `<div class="comment"><span class="comment-author">${c.author}:</span> ${c.text}</div>`).join('')}
+                <div class="comment-form">
+                    <input type="text" placeholder="Your name" id="author-${rowIdx}">
+                    <textarea placeholder="Add comment..." id="comment-${rowIdx}"></textarea>
+                    <button class="btn btn-primary" onclick="addComment(${rowIdx})">Add</button>
+                </div>
+            </div>`;
+        }
+
+        function updateCell(rowIdx, colId, value) {
+            data[currentTab][rowIdx][colId] = value;
+        }
+
+        function addComment(rowIdx) {
+            const author = document.getElementById(`author-${rowIdx}`).value.trim();
+            const text = document.getElementById(`comment-${rowIdx}`).value.trim();
+            if (author && text) {
+                if (!data[currentTab][rowIdx].comments) data[currentTab][rowIdx].comments = [];
+                data[currentTab][rowIdx].comments.push({author, text, time: new Date().toLocaleString()});
+                renderTable();
             }
-            cells[6].innerHTML = statusHtml;
-            
-            cells[9].innerHTML = `<button class="edit-btn" onclick="editRow(${carNumber})">Edit</button>`;
-            
-            row.classList.remove('edit-mode');
-            editingRow = null;
-            updateSummary();
         }
 
-        function cancelEdit() {
-            if (editingRow === null) return;
-            
-            const row = document.querySelector(`tr[data-car="${editingRow}"]`);
-            const cells = row.querySelectorAll('td');
-            
-            // Restore original data
-            cells[1].textContent = originalData.driver;
-            cells[2].textContent = originalData.phone;
-            cells[3].textContent = originalData.capacity;
-            cells[4].textContent = originalData.passengers;
-            cells[7].textContent = originalData.departure;
-            cells[8].textContent = originalData.notes;
-            cells[9].innerHTML = `<button class="edit-btn" onclick="editRow(${editingRow})">Edit</button>`;
-            
-            row.classList.remove('edit-mode');
-            editingRow = null;
-        }
-
-        function updateSummary() {
-            const rows = document.querySelectorAll('tbody tr');
-            let totalPeople = 0;
-            let totalCapacity = 0;
-            let fullCars = 0;
-            
-            rows.forEach(row => {
-                const capacity = parseInt(row.cells[3].textContent);
-                const passengers = row.cells[4].textContent.trim();
-                const passengerCount = passengers ? passengers.split(',').length : 0;
-                
-                totalCapacity += capacity;
-                totalPeople += passengerCount + 1; // +1 for driver
-                
-                if (capacity - 1 - passengerCount === 0) {
-                    fullCars++;
-                }
+        function addRow() {
+            const newRow = {car: (data[currentTab].length + 1).toString(), comments: []};
+            columns.forEach(col => {
+                if (col.id !== 'car') newRow[col.id] = col.type === 'number' ? 0 : '';
             });
-            
-            const availableSeats = totalCapacity - (totalPeople - 7); // -7 because drivers don't count as passengers
-            
-            document.getElementById('totalPeople').textContent = totalPeople;
-            document.getElementById('totalCapacity').textContent = totalCapacity;
-            document.getElementById('availableSeats').textContent = availableSeats;
-            document.getElementById('fullCars').textContent = fullCars;
+            data[currentTab].push(newRow);
+            renderTable();
         }
 
-        // Initialize summary on load
-        updateSummary();
+        function deleteRow(idx) {
+            if (confirm('Delete this car?')) {
+                data[currentTab].splice(idx, 1);
+                renderTable();
+            }
+        }
+
+        function editRow(idx) {
+            const row = data[currentTab][idx];
+            const visibleCols = columns.filter(c => c.visible && !c.system);
+            
+            visibleCols.forEach(col => {
+                const value = prompt(`Enter ${col.name}:`, row[col.id] || '');
+                if (value !== null) row[col.id] = col.type === 'number' ? parseInt(value) || 0 : value;
+            });
+            renderTable();
+        }
+
+        function editHeader() {
+            document.getElementById('titleInput').value = document.getElementById('appTitle').textContent;
+            document.getElementById('descInput').value = document.getElementById('appDesc').textContent;
+            document.getElementById('headerModal').style.display = 'block';
+        }
+
+        function saveHeader() {
+            document.getElementById('appTitle').textContent = document.getElementById('titleInput').value;
+            document.getElementById('appDesc').textContent = document.getElementById('descInput').value;
+            closeModal('headerModal');
+        }
+
+        function toggleColumns() {
+            const container = document.getElementById('columnToggles');
+            container.innerHTML = columns.map(col => 
+                `<label><input type="checkbox" ${col.visible ? 'checked' : ''} onchange="toggleColumn('${col.id}', this.checked)"> ${col.name}</label>`
+            ).join('');
+            document.getElementById('columnModal').style.display = 'block';
+        }
+
+        function toggleColumn(id, visible) {
+            const col = columns.find(c => c.id === id);
+            if (col) col.visible = visible;
+            renderTable();
+        }
+
+        function addColumn() {
+            document.getElementById('addColumnModal').style.display = 'block';
+            document.getElementById('newColumnType').onchange = function() {
+                document.getElementById('selectOptions').style.display = this.value === 'select' ? 'block' : 'none';
+            };
+        }
+
+        function saveNewColumn() {
+            const name = document.getElementById('newColumnName').value.trim();
+            const type = document.getElementById('newColumnType').value;
+            if (!name) return;
+            
+            const id = name.toLowerCase().replace(/\s+/g, '_');
+            const newCol = {id, name, type, visible: true, system: false};
+            
+            if (type === 'select') {
+                newCol.options = document.getElementById('selectOptionsList').value.split('\n').filter(o => o.trim());
+            }
+            
+            columns.push(newCol);
+            
+            // Add column to existing data
+            data.departure.forEach(row => row[id] = type === 'number' ? 0 : type === 'checkbox' ? false : '');
+            data.return.forEach(row => row[id] = type === 'number' ? 0 : type === 'checkbox' ? false : '');
+            
+            closeModal('addColumnModal');
+            renderTable();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Initialize
+        initData();
+        renderTable();
     </script>
 </body>
 </html>
