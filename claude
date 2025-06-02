@@ -19,12 +19,16 @@
         .btn-primary { background: #3b82f6; color: white; }
         .btn-secondary { background: #6b7280; color: white; }
         .btn-success { background: #10b981; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th, td { padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: left; }
         th { background: #374151; color: white; position: sticky; top: 0; }
         tr:nth-child(even) { background-color: #f9fafb; }
         tr:hover { background-color: #f3f4f6; }
+        .editable-cell { cursor: pointer; min-height: 20px; }
+        .editable-cell:hover { background-color: #e0e7ff; }
+        .cell-input { width: 100%; border: 2px solid #3b82f6; padding: 4px; border-radius: 3px; }
         .comments { margin-top: 10px; padding: 10px; background: #f8fafc; border-radius: 4px; font-size: 12px; }
         .comment { margin-bottom: 8px; padding: 5px; background: white; border-radius: 3px; }
         .comment-author { font-weight: bold; color: #2563eb; }
@@ -36,14 +40,25 @@
         .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; max-width: 500px; width: 90%; }
         .column-toggle { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
         .column-toggle label { display: flex; align-items: center; gap: 5px; }
+        .notes-section { margin-top: 20px; padding: 15px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+        .notes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .note-item { background: white; padding: 10px; margin-bottom: 8px; border-radius: 4px; border-left: 4px solid #3b82f6; }
+        .note-author { font-weight: bold; color: #2563eb; font-size: 12px; }
+        .note-text { margin-top: 5px; }
+        .note-time { font-size: 11px; color: #6b7280; margin-top: 5px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; }
+        .inline-edit { background: none; border: none; width: 100%; font-size: inherit; font-family: inherit; color: inherit; }
+        .inline-edit:focus { outline: 2px solid #3b82f6; background: white; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1 id="appTitle">🚗 Friends Trip Carpool Tracker</h1>
-            <p id="appDesc">Managing cars for our awesome adventure!</p>
-            <button class="edit-header" onclick="editHeader()">Edit Title</button>
+            <h1 id="appTitle" onclick="editInlineText('appTitle')">🚗 Friends Trip Carpool Tracker</h1>
+            <p id="appDesc" onclick="editInlineText('appDesc')">Managing cars for our awesome adventure!</p>
+            <button class="edit-header" onclick="editHeader()">Edit Details</button>
         </div>
         
         <div class="nav-tabs">
@@ -55,6 +70,8 @@
             <button class="btn btn-primary" onclick="addRow()">+ Add Car</button>
             <button class="btn btn-secondary" onclick="toggleColumns()">Show/Hide Columns</button>
             <button class="btn btn-secondary" onclick="addColumn()">+ Add Column</button>
+            <button class="btn btn-secondary" onclick="editColumn()">Edit Column</button>
+            <button class="btn btn-success" onclick="addNote()">+ Add Note</button>
         </div>
         
         <div class="table-container">
@@ -63,14 +80,28 @@
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
+
+        <div class="notes-section">
+            <div class="notes-header">
+                <h3>Trip Notes</h3>
+                <span id="noteCount">0 notes</span>
+            </div>
+            <div id="notesList"></div>
+        </div>
     </div>
 
     <!-- Modals -->
     <div id="headerModal" class="modal">
         <div class="modal-content">
             <h3>Edit Header</h3>
-            <input type="text" id="titleInput" placeholder="App Title">
-            <textarea id="descInput" placeholder="Description" rows="3"></textarea>
+            <div class="form-group">
+                <label>Title:</label>
+                <input type="text" id="titleInput" placeholder="App Title">
+            </div>
+            <div class="form-group">
+                <label>Description:</label>
+                <textarea id="descInput" placeholder="Description" rows="3"></textarea>
+            </div>
             <div style="margin-top: 10px;">
                 <button class="btn btn-success" onclick="saveHeader()">Save</button>
                 <button class="btn btn-secondary" onclick="closeModal('headerModal')">Cancel</button>
@@ -89,14 +120,21 @@
     <div id="addColumnModal" class="modal">
         <div class="modal-content">
             <h3>Add New Column</h3>
-            <input type="text" id="newColumnName" placeholder="Column Name">
-            <select id="newColumnType">
-                <option value="text">Text</option>
-                <option value="number">Number</option>
-                <option value="select">Dropdown</option>
-                <option value="checkbox">Checkbox</option>
-            </select>
-            <div id="selectOptions" style="display:none;">
+            <div class="form-group">
+                <label>Column Name:</label>
+                <input type="text" id="newColumnName" placeholder="Column Name">
+            </div>
+            <div class="form-group">
+                <label>Column Type:</label>
+                <select id="newColumnType">
+                    <option value="text">Text</option>
+                    <option value="number">Number</option>
+                    <option value="select">Dropdown</option>
+                    <option value="checkbox">Checkbox</option>
+                </select>
+            </div>
+            <div id="selectOptions" style="display:none;" class="form-group">
+                <label>Options (one per line):</label>
                 <textarea id="selectOptionsList" placeholder="Enter options, one per line" rows="3"></textarea>
             </div>
             <div style="margin-top: 10px;">
@@ -106,12 +144,51 @@
         </div>
     </div>
 
+    <div id="editColumnModal" class="modal">
+        <div class="modal-content">
+            <h3>Edit Column</h3>
+            <div class="form-group">
+                <label>Select Column to Edit:</label>
+                <select id="editColumnSelect"></select>
+            </div>
+            <div class="form-group">
+                <label>New Name:</label>
+                <input type="text" id="editColumnName" placeholder="Column Name">
+            </div>
+            <div style="margin-top: 10px;">
+                <button class="btn btn-success" onclick="saveColumnEdit()">Save</button>
+                <button class="btn btn-danger" onclick="deleteColumn()">Delete Column</button>
+                <button class="btn btn-secondary" onclick="closeModal('editColumnModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <h3>Add Note</h3>
+            <div class="form-group">
+                <label>Your Name:</label>
+                <input type="text" id="noteAuthor" placeholder="Your name">
+            </div>
+            <div class="form-group">
+                <label>Note:</label>
+                <textarea id="noteText" placeholder="Enter your note..." rows="4"></textarea>
+            </div>
+            <div style="margin-top: 10px;">
+                <button class="btn btn-success" onclick="saveNote()">Add Note</button>
+                <button class="btn btn-secondary" onclick="closeModal('noteModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentTab = 'departure';
         let data = { departure: [], return: [] };
+        let globalNotes = [];
         let columns = [
             {id: 'car', name: 'Car #', type: 'text', visible: true, system: true},
             {id: 'driver', name: 'Driver', type: 'text', visible: true, system: true},
+            {id: 'user', name: 'That\'s Me!', type: 'text', visible: true, system: false},
             {id: 'phone', name: 'Phone', type: 'text', visible: true, system: true},
             {id: 'capacity', name: 'Capacity', type: 'number', visible: true, system: true},
             {id: 'passengers', name: 'Passengers', type: 'text', visible: true, system: true},
@@ -121,12 +198,16 @@
 
         function initData() {
             data.departure = [
-                {car: '1', driver: 'Sarah Johnson', phone: '(555) 123-4567', capacity: 5, passengers: 'Mike, Lisa, Tom, Jenny', departure: '8:00 AM', notes: 'No smoking please', comments: []},
-                {car: '2', driver: 'Alex Chen', phone: '(555) 234-5678', capacity: 4, passengers: 'David, Emma', departure: '8:15 AM', notes: 'Meeting at Starbucks', comments: []}
+                {car: '1', driver: 'Sarah Johnson', user: '', phone: '(555) 123-4567', capacity: 5, passengers: 'Mike, Lisa, Tom, Jenny', departure: '8:00 AM', notes: 'No smoking please', comments: []},
+                {car: '2', driver: 'Alex Chen', user: '', phone: '(555) 234-5678', capacity: 4, passengers: 'David, Emma', departure: '8:15 AM', notes: 'Meeting at Starbucks', comments: []}
             ];
             data.return = [
-                {car: '1', driver: 'Sarah Johnson', phone: '(555) 123-4567', capacity: 5, passengers: 'Mike, Lisa, Tom, Jenny', departure: '6:00 PM', notes: 'Same group returning', comments: []},
-                {car: '2', driver: 'Alex Chen', phone: '(555) 234-5678', capacity: 4, passengers: 'David, Emma', departure: '6:15 PM', notes: 'Flexible timing', comments: []}
+                {car: '1', driver: 'Sarah Johnson', user: '', phone: '(555) 123-4567', capacity: 5, passengers: 'Mike, Lisa, Tom, Jenny', departure: '6:00 PM', notes: 'Same group returning', comments: []},
+                {car: '2', driver: 'Alex Chen', user: '', phone: '(555) 234-5678', capacity: 4, passengers: 'David, Emma', departure: '6:15 PM', notes: 'Flexible timing', comments: []}
+            ];
+            
+            globalNotes = [
+                {author: 'Trip Organizer', text: 'Remember to bring your ID and any snacks for the road!', time: new Date().toLocaleString()}
             ];
         }
 
@@ -148,9 +229,11 @@
                 '<tr>' + 
                 visibleCols.map(col => `<td>${renderCell(row, col, idx)}</td>`).join('') +
                 `<td>${renderComments(row, idx)}</td>` +
-                `<td><button class="btn btn-secondary" onclick="editRow(${idx})">Edit</button> <button class="btn btn-secondary" onclick="deleteRow(${idx})">Delete</button></td>` +
+                `<td><button class="btn btn-danger" onclick="deleteRow(${idx})">Delete</button></td>` +
                 '</tr>'
             ).join('');
+            
+            renderNotes();
         }
 
         function renderCell(row, col, rowIdx) {
@@ -159,10 +242,91 @@
             } else if (col.type === 'select') {
                 const options = col.options || [];
                 return `<select onchange="updateCell(${rowIdx}, '${col.id}', this.value)">
+                    <option value="">Select...</option>
                     ${options.map(opt => `<option value="${opt}" ${row[col.id] === opt ? 'selected' : ''}>${opt}</option>`).join('')}
                 </select>`;
+            } else if (col.type === 'number') {
+                return `<div class="editable-cell" onclick="editCell(${rowIdx}, '${col.id}', 'number')">${row[col.id] || '0'}</div>`;
             }
-            return row[col.id] || '';
+            return `<div class="editable-cell" onclick="editCell(${rowIdx}, '${col.id}', 'text')">${row[col.id] || 'Click to edit'}</div>`;
+        }
+
+        function editCell(rowIdx, colId, type) {
+            const cell = event.target;
+            const currentValue = data[currentTab][rowIdx][colId] || '';
+            
+            if (type === 'number') {
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.className = 'cell-input';
+                input.value = currentValue;
+                input.onblur = () => finishEdit(rowIdx, colId, input.value, cell);
+                input.onkeydown = (e) => {
+                    if (e.key === 'Enter') input.blur();
+                    if (e.key === 'Escape') {
+                        cell.textContent = currentValue;
+                        cell.onclick = () => editCell(rowIdx, colId, type);
+                    }
+                };
+                
+                cell.innerHTML = '';
+                cell.appendChild(input);
+                input.focus();
+                cell.onclick = null;
+            } else {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'cell-input';
+                input.value = currentValue;
+                input.onblur = () => finishEdit(rowIdx, colId, input.value, cell);
+                input.onkeydown = (e) => {
+                    if (e.key === 'Enter') input.blur();
+                    if (e.key === 'Escape') {
+                        cell.textContent = currentValue || 'Click to edit';
+                        cell.onclick = () => editCell(rowIdx, colId, type);
+                    }
+                };
+                
+                cell.innerHTML = '';
+                cell.appendChild(input);
+                input.focus();
+                cell.onclick = null;
+            }
+        }
+
+        function finishEdit(rowIdx, colId, value, cell) {
+            data[currentTab][rowIdx][colId] = value;
+            cell.textContent = value || (columns.find(c => c.id === colId).type === 'number' ? '0' : 'Click to edit');
+            cell.onclick = () => editCell(rowIdx, colId, columns.find(c => c.id === colId).type);
+        }
+
+        function editInlineText(elementId) {
+            const element = document.getElementById(elementId);
+            const currentText = element.textContent;
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'inline-edit';
+            input.value = currentText;
+            input.style.fontSize = window.getComputedStyle(element).fontSize;
+            input.style.fontWeight = window.getComputedStyle(element).fontWeight;
+            
+            input.onblur = () => {
+                element.textContent = input.value || currentText;
+                element.onclick = () => editInlineText(elementId);
+            };
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter') input.blur();
+                if (e.key === 'Escape') {
+                    element.textContent = currentText;
+                    element.onclick = () => editInlineText(elementId);
+                }
+            };
+            
+            element.innerHTML = '';
+            element.appendChild(input);
+            input.focus();
+            element.onclick = null;
         }
 
         function renderComments(row, rowIdx) {
@@ -175,6 +339,26 @@
                     <button class="btn btn-primary" onclick="addComment(${rowIdx})">Add</button>
                 </div>
             </div>`;
+        }
+
+        function renderNotes() {
+            const notesList = document.getElementById('notesList');
+            const noteCount = document.getElementById('noteCount');
+            
+            noteCount.textContent = `${globalNotes.length} note${globalNotes.length !== 1 ? 's' : ''}`;
+            
+            if (globalNotes.length === 0) {
+                notesList.innerHTML = '<p style="color: #6b7280; font-style: italic;">No notes yet. Click "Add Note" to get started!</p>';
+                return;
+            }
+            
+            notesList.innerHTML = globalNotes.map((note, idx) => `
+                <div class="note-item">
+                    <div class="note-author">${note.author}</div>
+                    <div class="note-text">${note.text}</div>
+                    <div class="note-time">${note.time}</div>
+                </div>
+            `).join('');
         }
 
         function updateCell(rowIdx, colId, value) {
@@ -192,9 +376,14 @@
         }
 
         function addRow() {
-            const newRow = {car: (data[currentTab].length + 1).toString(), comments: []};
+            const newCarNumber = Math.max(...data[currentTab].map(row => parseInt(row.car) || 0), 0) + 1;
+            const newRow = {car: newCarNumber.toString(), comments: []};
             columns.forEach(col => {
-                if (col.id !== 'car') newRow[col.id] = col.type === 'number' ? 0 : '';
+                if (col.id !== 'car') {
+                    if (col.type === 'number') newRow[col.id] = 0;
+                    else if (col.type === 'checkbox') newRow[col.id] = false;
+                    else newRow[col.id] = '';
+                }
             });
             data[currentTab].push(newRow);
             renderTable();
@@ -205,17 +394,6 @@
                 data[currentTab].splice(idx, 1);
                 renderTable();
             }
-        }
-
-        function editRow(idx) {
-            const row = data[currentTab][idx];
-            const visibleCols = columns.filter(c => c.visible && !c.system);
-            
-            visibleCols.forEach(col => {
-                const value = prompt(`Enter ${col.name}:`, row[col.id] || '');
-                if (value !== null) row[col.id] = col.type === 'number' ? parseInt(value) || 0 : value;
-            });
-            renderTable();
         }
 
         function editHeader() {
@@ -256,7 +434,7 @@
             const type = document.getElementById('newColumnType').value;
             if (!name) return;
             
-            const id = name.toLowerCase().replace(/\s+/g, '_');
+            const id = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
             const newCol = {id, name, type, visible: true, system: false};
             
             if (type === 'select') {
@@ -266,11 +444,92 @@
             columns.push(newCol);
             
             // Add column to existing data
-            data.departure.forEach(row => row[id] = type === 'number' ? 0 : type === 'checkbox' ? false : '');
-            data.return.forEach(row => row[id] = type === 'number' ? 0 : type === 'checkbox' ? false : '');
+            data.departure.forEach(row => {
+                if (type === 'number') row[id] = 0;
+                else if (type === 'checkbox') row[id] = false;
+                else row[id] = '';
+            });
+            data.return.forEach(row => {
+                if (type === 'number') row[id] = 0;
+                else if (type === 'checkbox') row[id] = false;
+                else row[id] = '';
+            });
             
             closeModal('addColumnModal');
             renderTable();
+        }
+
+        function editColumn() {
+            const select = document.getElementById('editColumnSelect');
+            select.innerHTML = columns.filter(c => !c.system).map(col => 
+                `<option value="${col.id}">${col.name}</option>`
+            ).join('');
+            
+            select.onchange = function() {
+                const col = columns.find(c => c.id === this.value);
+                if (col) {
+                    document.getElementById('editColumnName').value = col.name;
+                }
+            };
+            
+            if (select.options.length > 0) {
+                select.onchange();
+                document.getElementById('editColumnModal').style.display = 'block';
+            } else {
+                alert('No custom columns to edit. System columns cannot be modified.');
+            }
+        }
+
+        function saveColumnEdit() {
+            const id = document.getElementById('editColumnSelect').value;
+            const newName = document.getElementById('editColumnName').value.trim();
+            
+            if (!newName) return;
+            
+            const col = columns.find(c => c.id === id);
+            if (col) {
+                col.name = newName;
+                closeModal('editColumnModal');
+                renderTable();
+            }
+        }
+
+        function deleteColumn() {
+            const id = document.getElementById('editColumnSelect').value;
+            
+            if (confirm('Are you sure you want to delete this column? This action cannot be undone.')) {
+                // Remove column from columns array
+                columns = columns.filter(c => c.id !== id);
+                
+                // Remove column data from all rows
+                data.departure.forEach(row => delete row[id]);
+                data.return.forEach(row => delete row[id]);
+                
+                closeModal('editColumnModal');
+                renderTable();
+            }
+        }
+
+        function addNote() {
+            document.getElementById('noteModal').style.display = 'block';
+        }
+
+        function saveNote() {
+            const author = document.getElementById('noteAuthor').value.trim();
+            const text = document.getElementById('noteText').value.trim();
+            
+            if (author && text) {
+                globalNotes.push({
+                    author: author,
+                    text: text,
+                    time: new Date().toLocaleString()
+                });
+                
+                document.getElementById('noteAuthor').value = '';
+                document.getElementById('noteText').value = '';
+                closeModal('noteModal');
+                renderNotes();
+            }
         }
 
         function closeModal(id) {
